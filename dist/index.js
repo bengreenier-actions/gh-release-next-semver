@@ -2622,6 +2622,8 @@ const asyncWork = async () => {
     }
 
     console.log(`Overriding repo to '${owner}/${repo}'.`)
+  } else {
+    console.log(`Using repo '${context.repo.owner}/${context.repo.repo}'.`)
   }
 
   // use the enumerate context to do the enumeration
