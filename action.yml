@@ -1,0 +1,25 @@
+# action.yml
+name: 'GitHub Release: Next Semver'
+description: 'Get the next valid GitHub release semver value'
+inputs:
+  token:
+    description: 'GitHub platform token'
+    required: true
+  use_tag_name:
+    description: 'Should we use the tag name instead of the release name'
+    required: true
+    default: true
+  strip_tag_prefix:
+    description: 'A prefix we should strip away'
+    required: false
+    default: 'v'
+  type:
+    description: 'What semver bump type is this (major, premajor, minor, preminor, patch, prepatch, or prerelease)'
+    required: true
+    default: 'major'
+outputs:
+  next:
+    description: 'the next semver'
+runs:
+  using: 'node12'
+  main: 'dist/index.js'

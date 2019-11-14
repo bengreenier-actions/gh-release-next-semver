@@ -1,0 +1,44 @@
+{
+  "name": "gh-release-next-semver",
+  "version": "1.0.0",
+  "description": "Get the next valid GitHub release semver value",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "build": "ncc build index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bengreenier-actions/gh-release-next-semver.git"
+  },
+  "author": "Ben Greenier",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bengreenier-actions/gh-release-next-semver/issues"
+  },
+  "homepage": "https://github.com/bengreenier-actions/gh-release-next-semver#readme",
+  "keywords": [
+    "github",
+    "action"
+  ],
+  "dependencies": {
+    "@actions/core": "^1.2.0",
+    "@actions/github": "^1.1.0",
+    "semver": "^6.3.0"
+  },
+  "devDependencies": {
+    "@zeit/ncc": "^0.20.5",
+    "eslint": "^6.6.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-node": "^10.0.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "prettier": "^1.19.1",
+    "prettier-eslint": "^9.0.0"
+  },
+  "engines": {
+    "node": "~12.0.0"
+  }
+}
