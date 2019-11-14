@@ -2645,6 +2645,8 @@ const asyncWork = async () => {
     core.warning("No Releases found - Starting at version '0.0.0'.")
 
     top = semver.parse('0.0.0')
+  } else {
+    console.log(`Found latest release - version '${top.raw}'.`)
   }
 
   return top.inc(config.type).raw
