@@ -2627,6 +2627,9 @@ const asyncWork = async () => {
   // use the enumerate context to do the enumeration
   // we use paginate to get _all_ results
   const releases = await api.paginate('GET /repos/:owner/:repo/releases', { ...enumerateContext, per_page: 100 })
+
+  console.log(releases)
+
   const releaseData = releases.data
 
   const normalizeToVersion = name => {
