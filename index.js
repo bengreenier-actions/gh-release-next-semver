@@ -22,6 +22,11 @@ const getConfig = () => ({
   strip_tag_prefix: core.getInput('strip_tag_prefix'),
 
   /**
+   * GitHub repo context to use instead of the current one (username/reponame)
+   */
+  override_repo: core.getInput('override_repo'),
+
+  /**
    * What semver bump type is this (major, premajor, minor, preminor, patch, prepatch, or prerelease)
    */
   type: core.getInput('type', { required: true })
@@ -42,8 +47,22 @@ const asyncWork = async () => {
 
   const api = new GitHub(config.token)
 
-  // enumerate releases
-  const releases = await api.repos.listReleases(context.repo)
+  // enumerate command context
+  let enumerateContext = context.repo
+
+  // if the user overrides it, let it be known
+  if (config.override_repo) {
+    const [owner, repo] = config.override_repo.split('/')
+    enumerateContext = {
+      owner,
+      repo
+    }
+
+    console.log(`Overriding repo to '${owner}/${repo}'.`)
+  }
+
+  // use the enumerate context to do the enumeration
+  const releases = await api.repos.listReleases(enumerateContext)
   const releaseData = releases.data
 
   const normalizeToVersion = name => {

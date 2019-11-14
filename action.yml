@@ -13,6 +13,9 @@ inputs:
     description: 'A prefix we should strip away'
     required: false
     default: 'v'
+  override_repo:
+    description: 'GitHub repo context to use instead of the current one (username/reponame)'
+    required: false
   type:
     description: 'What semver bump type is this (major, premajor, minor, preminor, patch, prepatch, or prerelease)'
     required: true
