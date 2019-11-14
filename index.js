@@ -100,6 +100,6 @@ asyncWork().then(
   },
   err => {
     // inform the actions runner of our failure
-    core.setFailed(err.message)
+    core.setFailed(`${err.message}\n${err.stack}`)
   }
 )
