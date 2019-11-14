@@ -22,7 +22,7 @@ const getConfig = () => ({
   strip_tag_prefix: core.getInput('strip_tag_prefix'),
 
   /**
-   * Should we bump the major version
+   * What semver bump type is this (major, premajor, minor, preminor, patch, prepatch, or prerelease)
    */
   type: core.getInput('type', { required: true })
 })
@@ -32,6 +32,14 @@ const getConfig = () => ({
  */
 const asyncWork = async () => {
   const config = getConfig()
+
+  // this is hardcoded from the semver docs. As such, we'll only warn on it - not error
+  const supportedTypes = ['major', 'premajor', 'minor', 'preminor', 'patch', 'prepatch', 'prerelease']
+
+  if (!supportedTypes.includes(config.type)) {
+    core.warning(`Warning: Unknown type '${config.type}' given. Semver will probably fail.`)
+  }
+
   const api = new GitHub(config.token)
 
   // enumerate releases
@@ -57,7 +65,7 @@ const asyncWork = async () => {
     top = semver.parse('0.0.0')
   }
 
-  return top.inc(conf.type).raw
+  return top.inc(config.type).raw
 }
 
 // do the work for the action
