@@ -2602,6 +2602,7 @@ const asyncWork = async () => {
   const releaseData = releases.data
 
   const normalizeToVersion = name => {
+    // TODO(bengreenier): this is weird - probably use regex or match the actual literal (not length)
     const v = config.strip_tag_prefix ? name.substr(config.strip_tag_prefix.length) : name
 
     return semver.parse(v)
@@ -2612,6 +2613,12 @@ const asyncWork = async () => {
     .sort((a, b) => {
       return a.compare(b)
     })[0]
+
+  if (!top) {
+    core.warning("No Releases found - Starting at version '0.0.0'.")
+
+    top = semver.parse('0.0.0')
+  }
 
   return top.inc(conf.type).raw
 }
