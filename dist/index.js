@@ -2638,7 +2638,7 @@ const asyncWork = async () => {
   let top = releases
     .map(a => normalizeToVersion(config.use_tag_name ? a.tag_name : a.name))
     .sort((a, b) => {
-      return a.compare(b)
+      return b.compare(a)
     })[0]
 
   if (!top) {
