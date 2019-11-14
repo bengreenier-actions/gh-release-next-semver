@@ -63,7 +63,7 @@ const asyncWork = async () => {
 
   // use the enumerate context to do the enumeration
   // we use paginate to get _all_ results
-  const releases = await api.paginate('GET /repos/:owner/:repo/releases', { ...enumerateContext, per_page: 100 })
+  const releases = await api.paginate('GET /repos/:owner/:repo/releases', { enumerateContext })
 
   const normalizeToVersion = name => {
     // TODO(bengreenier): this is weird - probably use regex or match the actual literal (not length)
