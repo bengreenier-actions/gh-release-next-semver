@@ -2628,10 +2628,6 @@ const asyncWork = async () => {
   // we use paginate to get _all_ results
   const releases = await api.paginate('GET /repos/:owner/:repo/releases', { ...enumerateContext, per_page: 100 })
 
-  console.log(releases)
-
-  const releaseData = releases.data
-
   const normalizeToVersion = name => {
     // TODO(bengreenier): this is weird - probably use regex or match the actual literal (not length)
     const v = config.strip_tag_prefix ? name.substr(config.strip_tag_prefix.length) : name
@@ -2639,7 +2635,7 @@ const asyncWork = async () => {
     return semver.parse(v)
   }
 
-  let top = releaseData
+  let top = releases
     .map(a => normalizeToVersion(config.use_tag_name ? a.tag_name : a.name))
     .sort((a, b) => {
       return a.compare(b)
