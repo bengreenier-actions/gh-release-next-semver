@@ -50,6 +50,10 @@ const asyncWork = async () => {
       return a.compare(b)
     })[0]
 
+  if (!top) {
+    top = semver.parse('0.0.0')
+  }
+
   return top.inc(conf.type).raw
 }
 
