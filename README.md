@@ -1,6 +1,6 @@
 # gh-release-next-semver
 
-Github Action that gets the next valid GitHub release semver value
+Github Action that gets the next valid GitHub release semver value.
 
 ```
 v1.2.3 => 2.0.0
