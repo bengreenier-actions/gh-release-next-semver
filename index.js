@@ -45,14 +45,7 @@ const asyncWork = async () => {
     core.warning(`Warning: Unknown type '${config.type}' given. Semver will probably fail.`)
   }
 
-  const api = new GitHub(config.token, {
-    log: {
-      debug: (message, info) => console.log(message),
-      info: (message, info) => console.log(message),
-      warn: (message, info) => console.log(message),
-      error: (message, info) => console.log(message)
-    }
-  })
+  const api = new GitHub(config.token)
 
   // enumerate command context
   let enumerateContext = context.repo
