@@ -45,7 +45,14 @@ const asyncWork = async () => {
     core.warning(`Warning: Unknown type '${config.type}' given. Semver will probably fail.`)
   }
 
-  const api = new GitHub(config.token)
+  const api = new GitHub(config.token, {
+    log: {
+      debug: (message, info) => console.log(message),
+      info: (message, info) => console.log(message),
+      warn: (message, info) => console.log(message),
+      error: (message, info) => console.log(message)
+    }
+  })
 
   // enumerate command context
   let enumerateContext = context.repo
@@ -59,9 +66,9 @@ const asyncWork = async () => {
     }
 
     console.log(`Overriding repo to '${owner}/${repo}'.`)
-  } else {
-    console.log(`Using repo '${context.repo.owner}/${context.repo.repo}'.`)
   }
+
+  console.log(`Using repo '${enumerateContext.owner}/${enumerateContext.repo}'.`)
 
   // use the enumerate context to do the enumeration
   // we use paginate to get _all_ results
