@@ -1,0 +1,24 @@
+name: Self Validation
+
+on:
+  push:
+    branches:
+    - master
+  pull_request:
+    branches:
+    - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Get Next Semver
+      id: next_semver
+      uses: bengreenier-actions/gh-release-next-semver@master
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        use_tag_name: true
+        strip_tag_prefix: "v"
+        type: "major"
+    - name: Next Self Version
+      run: echo ${{ steps.next_semver.outputs.next }}
