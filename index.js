@@ -1,4 +1,5 @@
 const semver = require('semver')
+const conventionalRecommendedBump = require('conventional-recommended-bump')
 const core = require('@actions/core')
 const { GitHub, context } = require('@actions/github')
 
@@ -27,9 +28,18 @@ const getConfig = () => ({
   override_repo: core.getInput('override_repo'),
 
   /**
-   * What semver bump type is this (major, premajor, minor, preminor, patch, prepatch, or prerelease)
+   * What semver bump type is this (auto, major, premajor, minor, preminor, patch, prepatch, or prerelease)
+   *
+   * Note: When type is 'auto', conventionalRecommendedBump is used.
    */
-  type: core.getInput('type', { required: true })
+  type: core.getInput('type', { required: true }),
+
+  /**
+   * When type is 'auto' what conventional commit preset do we parse commits using?
+   *
+   * Note: Default value is 'angular'
+   */
+  conventional_preset: core.getInput('conventional_preset', { required: false })
 })
 
 /**
@@ -38,8 +48,8 @@ const getConfig = () => ({
 const asyncWork = async () => {
   const config = getConfig()
 
-  // this is hardcoded from the semver docs. As such, we'll only warn on it - not error
-  const supportedTypes = ['major', 'premajor', 'minor', 'preminor', 'patch', 'prepatch', 'prerelease']
+  // this is hardcoded from the semver docs (+ auto). As such, we'll only warn on it - not error
+  const supportedTypes = ['auto', 'major', 'premajor', 'minor', 'preminor', 'patch', 'prepatch', 'prerelease']
 
   if (!supportedTypes.includes(config.type)) {
     core.warning(`Warning: Unknown type '${config.type}' given. Semver will probably fail.`)
@@ -87,6 +97,18 @@ const asyncWork = async () => {
     top = semver.parse('0.0.0')
   } else {
     console.log(`Found latest release - version '${top.raw}'.`)
+  }
+
+  if (config.type === 'auto') {
+    console.log(`Found type 'auto' - Reading conventional-commits...`)
+    config.type = await new Promise((resolve, reject) => {
+      conventionalRecommendedBump({ preset: config.conventional_preset }, (err, recomendation) => {
+        if (err) reject(err)
+        else resolve(recommendation.releaseType)
+      })
+    })
+
+    console.log(`Using type: '${config.type}'.`)
   }
 
   return top.inc(config.type).raw

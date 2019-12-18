@@ -17,9 +17,13 @@ inputs:
     description: 'GitHub repo context to use instead of the current one (username/reponame)'
     required: false
   type:
-    description: 'What semver bump type is this (major, premajor, minor, preminor, patch, prepatch, or prerelease)'
+    description: 'What semver bump type is this (auto, major, premajor, minor, preminor, patch, prepatch, or prerelease)'
     required: true
     default: 'major'
+  conventional_preset:
+    description: 'When type is `auto` what conventional commit preset do we parse commits using?'
+    required: false
+    default: 'angular'
 outputs:
   next:
     description: 'the next semver'
