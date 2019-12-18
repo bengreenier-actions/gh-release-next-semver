@@ -21,6 +21,8 @@ inputs:
     required: true
     default: 'major'
 outputs:
+  current:
+    description: 'the current semver'
   next:
     description: 'the next semver'
 runs:

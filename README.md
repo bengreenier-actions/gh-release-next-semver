@@ -22,12 +22,20 @@ v1.2.3 => 2.0.0
 Will yield outputs:
 
 - `next`: contains the next semver value (always with no prefix)
+- `current`: contains the current semver value (always with no prefix, `1.0.0` on first run)
 
 And can be further accessed in yaml with:
 
 ```
-- name: Leverage output
+- name: Leverage Next
   run: echo ${{ steps.next_semver.outputs.next }}
+```
+
+Or
+
+```
+- name: Leverage Current
+  run: echo ${{ steps.next_semver.outputs.current }}
 ```
 
 Where `next_semver` matches the `id` of the step that ran the command.

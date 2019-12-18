@@ -5402,14 +5402,18 @@ const asyncWork = async () => {
     console.log(`Using type: '${config.type}'.`)
   }
 
-  return top.inc(config.type).raw
+  return {
+    current: top.raw,
+    next: top.inc(config.type).raw
+  }
 }
 
 // do the work for the action
 asyncWork().then(
   output => {
     // inform the actions runner of our output
-    core.setOutput('next', output)
+    core.setOutput('next', output.next)
+    core.setOutput('current', output.current)
   },
   err => {
     // inform the actions runner of our failure
