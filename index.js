@@ -3,6 +3,9 @@ const conventionalRecommendedBump = require('conventional-recommended-bump')
 const core = require('@actions/core')
 const { GitHub, context } = require('@actions/github')
 
+// ncc:hint
+require('conventional-changelog-angular')
+
 /**
  * Get configuration from the platform runtime
  */
@@ -32,14 +35,7 @@ const getConfig = () => ({
    *
    * Note: When type is 'auto', conventionalRecommendedBump is used.
    */
-  type: core.getInput('type', { required: true }),
-
-  /**
-   * When type is 'auto' what conventional commit preset do we parse commits using?
-   *
-   * Note: Default value is 'angular'
-   */
-  conventional_preset: core.getInput('conventional_preset', { required: false })
+  type: core.getInput('type', { required: true })
 })
 
 /**
@@ -102,7 +98,7 @@ const asyncWork = async () => {
   if (config.type === 'auto') {
     console.log(`Found type 'auto' - Reading conventional-commits...`)
     config.type = await new Promise((resolve, reject) => {
-      conventionalRecommendedBump({ preset: config.conventional_preset }, (err, recomendation) => {
+      conventionalRecommendedBump({ preset: 'angular' }, (err, recomendation) => {
         if (err) reject(err)
         else resolve(recommendation.releaseType)
       })

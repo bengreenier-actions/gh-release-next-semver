@@ -2628,6 +2628,25 @@ function applyAcceptHeader (res, headers) {
 
 /***/ }),
 
+/***/ 42:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+const Q = __webpack_require__(35)
+const conventionalChangelog = __webpack_require__(104)
+const parserOpts = __webpack_require__(323)
+const recommendedBumpOpts = __webpack_require__(169)
+const writerOpts = __webpack_require__(381)
+
+module.exports = Q.all([conventionalChangelog, parserOpts, recommendedBumpOpts, writerOpts])
+  .spread((conventionalChangelog, parserOpts, recommendedBumpOpts, writerOpts) => {
+    return { conventionalChangelog, parserOpts, recommendedBumpOpts, writerOpts }
+  })
+
+
+/***/ }),
+
 /***/ 48:
 /***/ (function(module) {
 
@@ -3132,6 +3151,24 @@ function checkMode (stat, options) {
 
   return ret
 }
+
+
+/***/ }),
+
+/***/ 104:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+
+const Q = __webpack_require__(35)
+const parserOpts = __webpack_require__(323)
+const writerOpts = __webpack_require__(381)
+
+module.exports = Q.all([parserOpts, writerOpts])
+  .spread((parserOpts, writerOpts) => {
+    return { parserOpts, writerOpts }
+  })
 
 
 /***/ }),
@@ -5279,6 +5316,9 @@ const conventionalRecommendedBump = __webpack_require__(827)
 const core = __webpack_require__(316)
 const { GitHub, context } = __webpack_require__(365)
 
+// ncc:hint
+__webpack_require__(42)
+
 /**
  * Get configuration from the platform runtime
  */
@@ -5308,14 +5348,7 @@ const getConfig = () => ({
    *
    * Note: When type is 'auto', conventionalRecommendedBump is used.
    */
-  type: core.getInput('type', { required: true }),
-
-  /**
-   * When type is 'auto' what conventional commit preset do we parse commits using?
-   *
-   * Note: Default value is 'angular'
-   */
-  conventional_preset: core.getInput('conventional_preset', { required: false })
+  type: core.getInput('type', { required: true })
 })
 
 /**
@@ -5378,7 +5411,7 @@ const asyncWork = async () => {
   if (config.type === 'auto') {
     console.log(`Found type 'auto' - Reading conventional-commits...`)
     config.type = await new Promise((resolve, reject) => {
-      conventionalRecommendedBump({ preset: config.conventional_preset }, (err, recomendation) => {
+      conventionalRecommendedBump({ preset: 'angular' }, (err, recomendation) => {
         if (err) reject(err)
         else resolve(recommendation.releaseType)
       })
@@ -22525,6 +22558,46 @@ asyncWork().then(
 
 /***/ }),
 
+/***/ 169:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+
+const parserOpts = __webpack_require__(323)
+
+module.exports = {
+  parserOpts,
+
+  whatBump: (commits) => {
+    let level = 2
+    let breakings = 0
+    let features = 0
+
+    commits.forEach(commit => {
+      if (commit.notes.length > 0) {
+        breakings += commit.notes.length
+        level = 0
+      } else if (commit.type === `feat`) {
+        features += 1
+        if (level === 2) {
+          level = 1
+        }
+      }
+    })
+
+    return {
+      level: level,
+      reason: breakings === 1
+        ? `There is ${breakings} BREAKING CHANGE and ${features} features`
+        : `There are ${breakings} BREAKING CHANGES and ${features} features`
+    }
+  }
+}
+
+
+/***/ }),
+
 /***/ 171:
 /***/ (function(module) {
 
@@ -27238,6 +27311,19 @@ module.exports = require("buffer");
 
 /***/ }),
 
+/***/ 295:
+/***/ (function(module) {
+
+"use strict";
+
+module.exports = function (x) {
+	var type = typeof x;
+	return x !== null && (type === 'object' || type === 'function');
+};
+
+
+/***/ }),
+
 /***/ 303:
 /***/ (function(__unusedmodule, exports) {
 
@@ -28270,6 +28356,27 @@ function bufferFrom (value, encodingOrOffset, length) {
 }
 
 module.exports = bufferFrom
+
+
+/***/ }),
+
+/***/ 323:
+/***/ (function(module) {
+
+"use strict";
+
+
+module.exports = {
+  headerPattern: /^(\w*)(?:\((.*)\))?: (.*)$/,
+  headerCorrespondence: [
+    `type`,
+    `scope`,
+    `subject`
+  ],
+  noteKeywords: [`BREAKING CHANGE`],
+  revertPattern: /^(?:Revert|revert:)\s"?([\s\S]+?)"?\s*This reverts commit (\w*)\./i,
+  revertCorrespondence: [`header`, `hash`]
+}
 
 
 /***/ }),
@@ -30059,6 +30166,123 @@ function authenticationBeforeRequest(state, options) {
 
 /***/ }),
 
+/***/ 381:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+
+const compareFunc = __webpack_require__(849)
+const Q = __webpack_require__(35)
+const readFile = Q.denodeify(__webpack_require__(747).readFile)
+const resolve = __webpack_require__(622).resolve
+
+module.exports = Q.all([
+  readFile(__webpack_require__.ab + "template.hbs", `utf-8`),
+  readFile(__webpack_require__.ab + "header.hbs", `utf-8`),
+  readFile(__webpack_require__.ab + "commit.hbs", `utf-8`),
+  readFile(__webpack_require__.ab + "footer.hbs", `utf-8`)
+])
+  .spread((template, header, commit, footer) => {
+    const writerOpts = getWriterOpts()
+
+    writerOpts.mainTemplate = template
+    writerOpts.headerPartial = header
+    writerOpts.commitPartial = commit
+    writerOpts.footerPartial = footer
+
+    return writerOpts
+  })
+
+function getWriterOpts () {
+  return {
+    transform: (commit, context) => {
+      let discard = true
+      const issues = []
+
+      commit.notes.forEach(note => {
+        note.title = `BREAKING CHANGES`
+        discard = false
+      })
+
+      if (commit.type === `feat`) {
+        commit.type = `Features`
+      } else if (commit.type === `fix`) {
+        commit.type = `Bug Fixes`
+      } else if (commit.type === `perf`) {
+        commit.type = `Performance Improvements`
+      } else if (commit.type === `revert` || commit.revert) {
+        commit.type = `Reverts`
+      } else if (discard) {
+        return
+      } else if (commit.type === `docs`) {
+        commit.type = `Documentation`
+      } else if (commit.type === `style`) {
+        commit.type = `Styles`
+      } else if (commit.type === `refactor`) {
+        commit.type = `Code Refactoring`
+      } else if (commit.type === `test`) {
+        commit.type = `Tests`
+      } else if (commit.type === `build`) {
+        commit.type = `Build System`
+      } else if (commit.type === `ci`) {
+        commit.type = `Continuous Integration`
+      }
+
+      if (commit.scope === `*`) {
+        commit.scope = ``
+      }
+
+      if (typeof commit.hash === `string`) {
+        commit.shortHash = commit.hash.substring(0, 7)
+      }
+
+      if (typeof commit.subject === `string`) {
+        let url = context.repository
+          ? `${context.host}/${context.owner}/${context.repository}`
+          : context.repoUrl
+        if (url) {
+          url = `${url}/issues/`
+          // Issue URLs.
+          commit.subject = commit.subject.replace(/#([0-9]+)/g, (_, issue) => {
+            issues.push(issue)
+            return `[#${issue}](${url}${issue})`
+          })
+        }
+        if (context.host) {
+          // User URLs.
+          commit.subject = commit.subject.replace(/\B@([a-z0-9](?:-?[a-z0-9/]){0,38})/g, (_, username) => {
+            if (username.includes('/')) {
+              return `@${username}`
+            }
+
+            return `[@${username}](${context.host}/${username})`
+          })
+        }
+      }
+
+      // remove references that already appear in the subject
+      commit.references = commit.references.filter(reference => {
+        if (issues.indexOf(reference.issue) === -1) {
+          return true
+        }
+
+        return false
+      })
+
+      return commit
+    },
+    groupBy: `type`,
+    commitGroupsSort: `title`,
+    commitsSort: [`scope`, `subject`],
+    noteGroupsSort: `title`,
+    notesSort: compareFunc
+  }
+}
+
+
+/***/ }),
+
 /***/ 386:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -31836,6 +32060,18 @@ Duplex.prototype._destroy = function (err, cb) {
 
   pna.nextTick(cb, err);
 };
+
+/***/ }),
+
+/***/ 506:
+/***/ (function(module) {
+
+"use strict";
+
+module.exports = function(val) {
+  return Array.isArray(val) ? val : [val];
+};
+
 
 /***/ }),
 
@@ -44613,6 +44849,56 @@ function hasNextPage (link) {
 
 /***/ }),
 
+/***/ 849:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+var arrayify = __webpack_require__(506);
+var dotPropGet = __webpack_require__(952).get;
+
+function compareFunc(prop) {
+  return function(a, b) {
+    var ret = 0;
+
+    arrayify(prop).some(function(el) {
+      var x;
+      var y;
+
+      if (typeof el === 'function') {
+        x = el(a);
+        y = el(b);
+      } else if (typeof el === 'string') {
+        x = dotPropGet(a, el);
+        y = dotPropGet(b, el);
+      } else {
+        x = a;
+        y = b;
+      }
+
+      if (x === y) {
+        ret = 0;
+        return;
+      }
+
+      if (typeof x === 'string' && typeof y === 'string') {
+        ret = x.localeCompare(y);
+        return ret !== 0;
+      }
+
+      ret = x < y ? -1 : 1;
+      return true;
+    });
+
+    return ret;
+  };
+}
+
+module.exports = compareFunc;
+
+
+/***/ }),
+
 /***/ 850:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
@@ -46887,6 +47173,125 @@ function simpleEnd(buf) {
 /***/ (function(module) {
 
 module.exports = {"_from":"@octokit/rest@^16.15.0","_id":"@octokit/rest@16.35.0","_inBundle":false,"_integrity":"sha512-9ShFqYWo0CLoGYhA1FdtdykJuMzS/9H6vSbbQWDX4pWr4p9v+15MsH/wpd/3fIU+tSxylaNO48+PIHqOkBRx3w==","_location":"/@octokit/rest","_phantomChildren":{"os-name":"3.1.0"},"_requested":{"type":"range","registry":true,"raw":"@octokit/rest@^16.15.0","name":"@octokit/rest","escapedName":"@octokit%2frest","scope":"@octokit","rawSpec":"^16.15.0","saveSpec":null,"fetchSpec":"^16.15.0"},"_requiredBy":["/@actions/github"],"_resolved":"https://registry.npmjs.org/@octokit/rest/-/rest-16.35.0.tgz","_shasum":"7ccc1f802f407d5b8eb21768c6deca44e7b4c0d8","_spec":"@octokit/rest@^16.15.0","_where":"C:\\Users\\ben\\git\\@actions\\gh-release-next-semver\\node_modules\\@actions\\github","author":{"name":"Gregor Martynus","url":"https://github.com/gr2m"},"bugs":{"url":"https://github.com/octokit/rest.js/issues"},"bundleDependencies":false,"bundlesize":[{"path":"./dist/octokit-rest.min.js.gz","maxSize":"33 kB"}],"contributors":[{"name":"Mike de Boer","email":"info@mikedeboer.nl"},{"name":"Fabian Jakobs","email":"fabian@c9.io"},{"name":"Joe Gallo","email":"joe@brassafrax.com"},{"name":"Gregor Martynus","url":"https://github.com/gr2m"}],"dependencies":{"@octokit/request":"^5.2.0","@octokit/request-error":"^1.0.2","atob-lite":"^2.0.0","before-after-hook":"^2.0.0","btoa-lite":"^1.0.0","deprecation":"^2.0.0","lodash.get":"^4.4.2","lodash.set":"^4.3.2","lodash.uniq":"^4.5.0","octokit-pagination-methods":"^1.1.0","once":"^1.4.0","universal-user-agent":"^4.0.0"},"deprecated":false,"description":"GitHub REST API client for Node.js","devDependencies":{"@gimenete/type-writer":"^0.1.3","@octokit/fixtures-server":"^5.0.6","@octokit/graphql":"^4.2.0","@types/node":"^12.0.0","bundlesize":"^0.18.0","chai":"^4.1.2","compression-webpack-plugin":"^3.0.0","cypress":"^3.0.0","glob":"^7.1.2","http-proxy-agent":"^2.1.0","lodash.camelcase":"^4.3.0","lodash.merge":"^4.6.1","lodash.upperfirst":"^4.3.1","mkdirp":"^0.5.1","mocha":"^6.0.0","mustache":"^3.0.0","nock":"^11.3.3","npm-run-all":"^4.1.2","nyc":"^14.0.0","prettier":"^1.14.2","proxy":"^1.0.0","semantic-release":"^15.0.0","sinon":"^7.2.4","sinon-chai":"^3.0.0","sort-keys":"^4.0.0","string-to-arraybuffer":"^1.0.0","string-to-jsdoc-comment":"^1.0.0","typescript":"^3.3.1","webpack":"^4.0.0","webpack-bundle-analyzer":"^3.0.0","webpack-cli":"^3.0.0"},"files":["index.js","index.d.ts","lib","plugins"],"homepage":"https://github.com/octokit/rest.js#readme","keywords":["octokit","github","rest","api-client"],"license":"MIT","name":"@octokit/rest","nyc":{"ignore":["test"]},"publishConfig":{"access":"public"},"release":{"publish":["@semantic-release/npm",{"path":"@semantic-release/github","assets":["dist/*","!dist/*.map.gz"]}]},"repository":{"type":"git","url":"git+https://github.com/octokit/rest.js.git"},"scripts":{"build":"npm-run-all build:*","build:browser":"npm-run-all build:browser:*","build:browser:development":"webpack --mode development --entry . --output-library=Octokit --output=./dist/octokit-rest.js --profile --json > dist/bundle-stats.json","build:browser:production":"webpack --mode production --entry . --plugin=compression-webpack-plugin --output-library=Octokit --output-path=./dist --output-filename=octokit-rest.min.js --devtool source-map","build:ts":"npm run -s update-endpoints:typescript","coverage":"nyc report --reporter=html && open coverage/index.html","generate-bundle-report":"webpack-bundle-analyzer dist/bundle-stats.json --mode=static --no-open --report dist/bundle-report.html","lint":"prettier --check '{lib,plugins,scripts,test}/**/*.{js,json,ts}' 'docs/*.{js,json}' 'docs/src/**/*' index.js README.md package.json","lint:fix":"prettier --write '{lib,plugins,scripts,test}/**/*.{js,json,ts}' 'docs/*.{js,json}' 'docs/src/**/*' index.js README.md package.json","postvalidate:ts":"tsc --noEmit --target es6 test/typescript-validate.ts","prebuild:browser":"mkdirp dist/","pretest":"npm run -s lint","prevalidate:ts":"npm run -s build:ts","start-fixtures-server":"octokit-fixtures-server","test":"nyc mocha test/mocha-node-setup.js \"test/*/**/*-test.js\"","test:browser":"cypress run --browser chrome","update-endpoints":"npm-run-all update-endpoints:*","update-endpoints:code":"node scripts/update-endpoints/code","update-endpoints:fetch-json":"node scripts/update-endpoints/fetch-json","update-endpoints:typescript":"node scripts/update-endpoints/typescript","validate:ts":"tsc --target es6 --noImplicitAny index.d.ts"},"types":"index.d.ts","version":"16.35.0"};
+
+/***/ }),
+
+/***/ 952:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+"use strict";
+
+var isObj = __webpack_require__(295);
+
+module.exports.get = function (obj, path) {
+	if (!isObj(obj) || typeof path !== 'string') {
+		return obj;
+	}
+
+	var pathArr = getPathSegments(path);
+
+	for (var i = 0; i < pathArr.length; i++) {
+		var descriptor = Object.getOwnPropertyDescriptor(obj, pathArr[i]) || Object.getOwnPropertyDescriptor(Object.prototype, pathArr[i]);
+		if (descriptor && !descriptor.enumerable) {
+			return;
+		}
+
+		obj = obj[pathArr[i]];
+
+		if (obj === undefined || obj === null) {
+			// `obj` is either `undefined` or `null` so we want to stop the loop, and
+			// if this is not the last bit of the path, and
+			// if it did't return `undefined`
+			// it would return `null` if `obj` is `null`
+			// but we want `get({foo: null}, 'foo.bar')` to equal `undefined` not `null`
+			if (i !== pathArr.length - 1) {
+				return undefined;
+			}
+
+			break;
+		}
+	}
+
+	return obj;
+};
+
+module.exports.set = function (obj, path, value) {
+	if (!isObj(obj) || typeof path !== 'string') {
+		return;
+	}
+
+	var pathArr = getPathSegments(path);
+
+	for (var i = 0; i < pathArr.length; i++) {
+		var p = pathArr[i];
+
+		if (!isObj(obj[p])) {
+			obj[p] = {};
+		}
+
+		if (i === pathArr.length - 1) {
+			obj[p] = value;
+		}
+
+		obj = obj[p];
+	}
+};
+
+module.exports.delete = function (obj, path) {
+	if (!isObj(obj) || typeof path !== 'string') {
+		return;
+	}
+
+	var pathArr = getPathSegments(path);
+
+	for (var i = 0; i < pathArr.length; i++) {
+		var p = pathArr[i];
+
+		if (i === pathArr.length - 1) {
+			delete obj[p];
+			return;
+		}
+
+		obj = obj[p];
+	}
+};
+
+module.exports.has = function (obj, path) {
+	if (!isObj(obj) || typeof path !== 'string') {
+		return false;
+	}
+
+	var pathArr = getPathSegments(path);
+
+	for (var i = 0; i < pathArr.length; i++) {
+		obj = obj[pathArr[i]];
+
+		if (obj === undefined) {
+			return false;
+		}
+	}
+
+	return true;
+};
+
+function getPathSegments(path) {
+	var pathArr = path.split('.');
+	var parts = [];
+
+	for (var i = 0; i < pathArr.length; i++) {
+		var p = pathArr[i];
+
+		while (p[p.length - 1] === '\\' && pathArr[i + 1] !== undefined) {
+			p = p.slice(0, -1) + '.';
+			p += pathArr[++i];
+		}
+
+		parts.push(p);
+	}
+
+	return parts;
+}
+
 
 /***/ }),
 

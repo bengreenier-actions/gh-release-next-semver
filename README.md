@@ -36,6 +36,8 @@ Where `next_semver` matches the `id` of the step that ran the command.
 
 > This section only applies if your repo uses https://www.conventionalcommits.org.
 
+> Note: at this time, only `angular` is a supported commit format preset.
+
 If you wish to determine the next version by using conventional commit analysis, specify `type: 'auto'`. For example:
 
 ```
