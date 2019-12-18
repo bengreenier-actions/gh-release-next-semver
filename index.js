@@ -86,9 +86,9 @@ const asyncWork = async () => {
     })[0]
 
   if (!top) {
-    core.warning("No Releases found - Starting at version '0.0.0'.")
+    core.warning("No Releases found - Starting at version '1.0.0'.")
 
-    top = semver.parse('0.0.0')
+    top = semver.parse('1.0.0')
   } else {
     console.log(`Found latest release - version '${top.raw}'.`)
   }
