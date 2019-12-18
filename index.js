@@ -107,7 +107,8 @@ const asyncWork = async () => {
 
   return {
     current: top.raw,
-    next: top.inc(config.type).raw
+    next: top.inc(config.type).raw,
+    type: config.type
   }
 }
 
@@ -117,6 +118,7 @@ asyncWork().then(
     // inform the actions runner of our output
     core.setOutput('next', output.next)
     core.setOutput('current', output.current)
+    core.setOutput('type', output.type)
   },
   err => {
     // inform the actions runner of our failure

@@ -23,6 +23,7 @@ Will yield outputs:
 
 - `next`: contains the next semver value (always with no prefix)
 - `current`: contains the current semver value (always with no prefix, `1.0.0` on first run)
+- `type`: contains the determined semver change type (ie: `major`, `minor`, `patch`)
 
 And can be further accessed in yaml with:
 

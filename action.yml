@@ -23,6 +23,8 @@ inputs:
 outputs:
   current:
     description: 'the current semver'
+  type:
+    description: 'the semver change type'
   next:
     description: 'the next semver'
 runs:
