@@ -96,7 +96,7 @@ const asyncWork = async () => {
   if (config.type === 'auto') {
     console.log(`Found type 'auto' - Reading conventional-commits...`)
     config.type = await new Promise((resolve, reject) => {
-      conventionalRecommendedBump({ config: angularConvention }, (err, recomendation) => {
+      conventionalRecommendedBump({ config: angularConvention }, (err, recommendation) => {
         if (err) reject(err)
         else resolve(recommendation.releaseType)
       })
