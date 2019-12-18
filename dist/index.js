@@ -2634,9 +2634,9 @@ function applyAcceptHeader (res, headers) {
 "use strict";
 
 const Q = __webpack_require__(35)
-const conventionalChangelog = __webpack_require__(104)
+const conventionalChangelog = __webpack_require__(117)
 const parserOpts = __webpack_require__(323)
-const recommendedBumpOpts = __webpack_require__(169)
+const recommendedBumpOpts = __webpack_require__(834)
 const writerOpts = __webpack_require__(381)
 
 module.exports = Q.all([conventionalChangelog, parserOpts, recommendedBumpOpts, writerOpts])
@@ -2663,6 +2663,20 @@ module.exports = Array.isArray || function (arr) {
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
 module.exports = __webpack_require__(413);
+
+
+/***/ }),
+
+/***/ 56:
+/***/ (function(module, __unusedexports, __webpack_require__) {
+
+module.exports = octokitRegisterEndpoints;
+
+const registerEndpoints = __webpack_require__(567);
+
+function octokitRegisterEndpoints(octokit) {
+  octokit.registerEndpoints = registerEndpoints.bind(null, octokit);
+}
 
 
 /***/ }),
@@ -3155,24 +3169,6 @@ function checkMode (stat, options) {
 
 /***/ }),
 
-/***/ 104:
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-"use strict";
-
-
-const Q = __webpack_require__(35)
-const parserOpts = __webpack_require__(323)
-const writerOpts = __webpack_require__(381)
-
-module.exports = Q.all([parserOpts, writerOpts])
-  .spread((parserOpts, writerOpts) => {
-    return { parserOpts, writerOpts }
-  })
-
-
-/***/ }),
-
 /***/ 105:
 /***/ (function(module) {
 
@@ -3321,31 +3317,19 @@ function nextTick(fn, arg1, arg2, arg3) {
 /***/ }),
 
 /***/ 117:
-/***/ (function(__unusedmodule, exports, __webpack_require__) {
+/***/ (function(module, __unusedexports, __webpack_require__) {
 
 "use strict";
 
 
-Object.defineProperty(exports, '__esModule', { value: true });
+const Q = __webpack_require__(35)
+const parserOpts = __webpack_require__(323)
+const writerOpts = __webpack_require__(381)
 
-function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
-
-var osName = _interopDefault(__webpack_require__(608));
-
-function getUserAgent() {
-  try {
-    return `Node.js/${process.version.substr(1)} (${osName()}; ${process.arch})`;
-  } catch (error) {
-    if (/wmic os get Caption/.test(error.message)) {
-      return "Windows <version undetectable>";
-    }
-
-    throw error;
-  }
-}
-
-exports.getUserAgent = getUserAgent;
-//# sourceMappingURL=index.js.map
+module.exports = Q.all([parserOpts, writerOpts])
+  .spread((parserOpts, writerOpts) => {
+    return { parserOpts, writerOpts }
+  })
 
 
 /***/ }),
@@ -5313,11 +5297,9 @@ function coerce (version, options) {
 
 const semver = __webpack_require__(151)
 const conventionalRecommendedBump = __webpack_require__(827)
+const angularConvention = __webpack_require__(42)
 const core = __webpack_require__(316)
 const { GitHub, context } = __webpack_require__(365)
-
-// ncc:hint
-__webpack_require__(42)
 
 /**
  * Get configuration from the platform runtime
@@ -5411,7 +5393,7 @@ const asyncWork = async () => {
   if (config.type === 'auto') {
     console.log(`Found type 'auto' - Reading conventional-commits...`)
     config.type = await new Promise((resolve, reject) => {
-      conventionalRecommendedBump({ preset: 'angular' }, (err, recomendation) => {
+      conventionalRecommendedBump({ config: angularConvention }, (err, recomendation) => {
         if (err) reject(err)
         else resolve(recommendation.releaseType)
       })
@@ -22558,46 +22540,6 @@ asyncWork().then(
 
 /***/ }),
 
-/***/ 169:
-/***/ (function(module, __unusedexports, __webpack_require__) {
-
-"use strict";
-
-
-const parserOpts = __webpack_require__(323)
-
-module.exports = {
-  parserOpts,
-
-  whatBump: (commits) => {
-    let level = 2
-    let breakings = 0
-    let features = 0
-
-    commits.forEach(commit => {
-      if (commit.notes.length > 0) {
-        breakings += commit.notes.length
-        level = 0
-      } else if (commit.type === `feat`) {
-        features += 1
-        if (level === 2) {
-          level = 1
-        }
-      }
-    })
-
-    return {
-      level: level,
-      reason: breakings === 1
-        ? `There is ${breakings} BREAKING CHANGE and ${features} features`
-        : `There are ${breakings} BREAKING CHANGES and ${features} features`
-    }
-  }
-}
-
-
-/***/ }),
-
 /***/ 171:
 /***/ (function(module) {
 
@@ -23722,6 +23664,36 @@ function parse(command, args, options) {
 }
 
 module.exports = parse;
+
+
+/***/ }),
+
+/***/ 193:
+/***/ (function(__unusedmodule, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
+
+var osName = _interopDefault(__webpack_require__(608));
+
+function getUserAgent() {
+  try {
+    return `Node.js/${process.version.substr(1)} (${osName()}; ${process.arch})`;
+  } catch (error) {
+    if (/wmic os get Caption/.test(error.message)) {
+      return "Windows <version undetectable>";
+    }
+
+    throw error;
+  }
+}
+
+exports.getUserAgent = getUserAgent;
+//# sourceMappingURL=index.js.map
 
 
 /***/ }),
@@ -25064,7 +25036,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var endpoint = __webpack_require__(443);
-var universalUserAgent = __webpack_require__(117);
+var universalUserAgent = __webpack_require__(193);
 var isPlainObject = _interopDefault(__webpack_require__(199));
 var nodeFetch = _interopDefault(__webpack_require__(684));
 var requestError = __webpack_require__(873);
@@ -31684,7 +31656,7 @@ const CORE_PLUGINS = [
   __webpack_require__(360), // deprecated: remove in v17
   __webpack_require__(660),
   __webpack_require__(739),
-  __webpack_require__(834),
+  __webpack_require__(56),
   __webpack_require__(482),
   __webpack_require__(663),
 
@@ -44594,12 +44566,38 @@ function noop () {}
 /***/ 834:
 /***/ (function(module, __unusedexports, __webpack_require__) {
 
-module.exports = octokitRegisterEndpoints;
+"use strict";
 
-const registerEndpoints = __webpack_require__(567);
 
-function octokitRegisterEndpoints(octokit) {
-  octokit.registerEndpoints = registerEndpoints.bind(null, octokit);
+const parserOpts = __webpack_require__(323)
+
+module.exports = {
+  parserOpts,
+
+  whatBump: (commits) => {
+    let level = 2
+    let breakings = 0
+    let features = 0
+
+    commits.forEach(commit => {
+      if (commit.notes.length > 0) {
+        breakings += commit.notes.length
+        level = 0
+      } else if (commit.type === `feat`) {
+        features += 1
+        if (level === 2) {
+          level = 1
+        }
+      }
+    })
+
+    return {
+      level: level,
+      reason: breakings === 1
+        ? `There is ${breakings} BREAKING CHANGE and ${features} features`
+        : `There are ${breakings} BREAKING CHANGES and ${features} features`
+    }
+  }
 }
 
 

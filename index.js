@@ -1,10 +1,8 @@
 const semver = require('semver')
 const conventionalRecommendedBump = require('conventional-recommended-bump')
+const angularConvention = require('conventional-changelog-angular')
 const core = require('@actions/core')
 const { GitHub, context } = require('@actions/github')
-
-// ncc:hint
-require('conventional-changelog-angular')
 
 /**
  * Get configuration from the platform runtime
@@ -98,7 +96,7 @@ const asyncWork = async () => {
   if (config.type === 'auto') {
     console.log(`Found type 'auto' - Reading conventional-commits...`)
     config.type = await new Promise((resolve, reject) => {
-      conventionalRecommendedBump({ preset: 'angular' }, (err, recomendation) => {
+      conventionalRecommendedBump({ config: angularConvention }, (err, recomendation) => {
         if (err) reject(err)
         else resolve(recommendation.releaseType)
       })
